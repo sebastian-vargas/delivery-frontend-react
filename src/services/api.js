@@ -157,25 +157,9 @@ export const logisticsService = {
 };
 
 // Servicio para productos
-export const productService = {
-    getAll: async () => {
-        return api.get(config.ENDPOINTS.PRODUCTS.ALL);
-    },
-
-    getById: async (id) => {
-        return api.get(config.ENDPOINTS.PRODUCTS.DETAIL(id));
-    },
-
-    create: async (productData) => {
-        return api.post(config.ENDPOINTS.PRODUCTS.ALL, productData);
-    },
-
-    update: async (id, productData) => {
-        return api.put(config.ENDPOINTS.PRODUCTS.DETAIL(id), productData);
-    },
-
-    delete: async (id) => {
-        return api.delete(config.ENDPOINTS.PRODUCTS.DETAIL(id));
+export const reportesService = {
+    getAll: async (filtros) => {
+        return api.get(config.ENDPOINTS.REPORTES.ALL, { params: filtros });
     }
 };
 export default api; 

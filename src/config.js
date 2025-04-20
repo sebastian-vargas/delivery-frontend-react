@@ -20,9 +20,8 @@ const config = {
             GET_TRANSPORTISTAS: '/logistica/transportistas?page=1&limit=100',
             GET_ORDENES_PENDIENTES: `envios/estado/en_espera?page=1&limit=100`
         },
-        PRODUCTS: {
-            ALL: '/products',
-            DETAIL: (id) => `/products/${id}`
+        REPORTES: {
+            ALL: '/reportes/envios'
         },
         ORDERS: {
             //ALL: '/orders',
