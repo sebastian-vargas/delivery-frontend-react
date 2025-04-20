@@ -2,14 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { orderService } from '../services/api';
+import CreateShipmentModal from '../components/CreateShipmentModal';
+import LiveTrackingWidget from '../components/LiveTrackingWidget';
 
 function Home() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [guia, setGuia] = useState("");
-  const [orderGuia, setOrderGuia] = useState([]);
+  const [orderGuia, setOrderGuia] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     /*const fetchData = async () => {
@@ -53,19 +56,6 @@ function Home() {
     navigate('/login');
   };
 
-  if (loading) {
-    return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-xl">Cargando productos...</div>
-      </div>
-    );
-  }
-
-  // Función para obtener el último estado del envío
-  const getLatestStatus = (historial) => {
-    if (!historial || historial.length === 0) return 'Desconocido';
-    return historial[historial.length - 1].nombre_estado.replace('_', ' ');
-  };
 
   // Función para formatear fecha
   const formatDate = (dateString) => {
@@ -104,93 +94,121 @@ function Home() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="username" className="block text-gray-700 font-medium mb-2">
-              Número de Guía
-            </label>
-            <input
-              type="text"
-              id="guia"
-              value={guia}
-              onChange={(e) => setGuia(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
-              required
-            />
+        <div className="flex flex-col md:flex-row gap-4 md:items-start mb-6">
+          <div className="flex-grow bg-white rounded-lg shadow p-6">
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label htmlFor="username" className="block text-gray-700 font-medium mb-2">
+                  Número de Guía
+                </label>
+                <input
+                  type="text"
+                  id="guia"
+                  value={guia}
+                  onChange={(e) => setGuia(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
+                  required
+                />
+              </div>
+              
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-blue-300"
+                disabled={loading}
+              >
+                {loading ? 'Buscando...' : 'Buscar'}
+              </button>
+            </form>
           </div>
           
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-blue-300"
-            disabled={loading}
-          >
-            {loading ? 'Buscando...' : 'Buscar'}
-          </button>
-        </form>
+          <div className="md:w-64 bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-medium mb-3">Acciones Rápidas</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 flex items-center justify-center"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Crear Nuevo Envío
+            </button>
+          </div>
+        </div>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-6 mt-6">
-          <h2 className="text-lg font-medium mb-3">Información del Envío</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="md:col-span-2">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium mb-3">Información del Envío</h2>
 
-          <div className="border rounded-lg overflow-hidden">
-            {orderGuia.id ? (
-              <div className="divide-y">
-
-                  <div key={orderGuia.id} className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-black">
-                      <div className="space-y-3">
-                        <div>
-                          <h3 className="font-bold text-lg">Información del Envío</h3>
-                          <p className="font-medium">Guía: <span className="text-blue-600">{orderGuia.orden.guia}</span></p>
-                          <p>Estado: <span className="font-semibold">{getLatestStatus(orderGuia.historial)}</span></p>
-                          <p>Fecha de creación: {formatDate(orderGuia.orden.created_at)}</p>
-                          <p>Entrega estimada: {formatDate(orderGuia.orden.fecha_entrega)}</p>
-                        </div>
-
-                        <div>
-                          <h3 className="font-bold">Dirección de Entrega</h3>
-                          <p>{orderGuia.direccion.calle}</p>
-                          <p>{orderGuia.direccion.ciudad}, {orderGuia.direccion.departamento}</p>
-                          <p>CP: {orderGuia.direccion.codigo_postal}</p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div>
-                          <h3 className="font-bold">Detalles del Paquete</h3>
-                          {orderGuia.paquete.map((pkg) => (
-                            <div key={pkg.id} className="border-b pb-2 mb-2 last:border-0">
-                              <p>Tipo: {pkg.tipo_envio} - {pkg.tipo_producto}</p>
-                              <p>Dimensiones: {pkg.largo} x {pkg.ancho} x {pkg.alto} cm</p>
-                              <p>Peso: {pkg.peso} kg</p>
+              <div className="border rounded-lg overflow-hidden">
+                {guia && orderGuia ? (
+                  <div className="divide-y">
+                      <div key={orderGuia.id} className="p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-black">
+                          <div className="space-y-3">
+                            <div>
+                              <h3 className="font-bold text-lg">Información del Envío</h3>
+                              <p className="font-medium">Guía: <span className="text-blue-600">{orderGuia.orden.guia}</span></p>
+                              <p>Estado: <span className="font-semibold">{orderGuia.orden.estado_actual}</span></p>
+                              <p>Fecha de creación: {formatDate(orderGuia.orden.created_at)}</p>
+                              <p>Entrega estimada: {formatDate(orderGuia.orden.fecha_entrega)}</p>
                             </div>
-                          ))}
-                        </div>
 
-                        <div>
-                          <h3 className="font-bold">Historial de Envío</h3>
-                          <div className="mt-2 space-y-2">
-                            {orderGuia.historial.map((hist) => (
-                              <div key={hist.id} className="text-sm">
-                                <p className="font-medium">{formatDate(hist.fecha_hora)}</p>
-                                <p className="text-gray-700">{hist.observaciones}</p>
+                            <div>
+                              <h3 className="font-bold">Dirección de Entrega</h3>
+                              <p>{orderGuia.direccion.calle}</p>
+                              <p>{orderGuia.direccion.ciudad}, {orderGuia.direccion.departamento}</p>
+                              <p>CP: {orderGuia.direccion.codigo_postal}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div>
+                              <h3 className="font-bold">Detalles del Paquete</h3>
+                              {orderGuia.paquete.map((pkg) => (
+                                <div key={pkg.id} className="border-b pb-2 mb-2 last:border-0">
+                                  <p>Tipo: {pkg.tipo_envio} - {pkg.tipo_producto}</p>
+                                  <p>Dimensiones: {pkg.largo} x {pkg.ancho} x {pkg.alto} cm</p>
+                                  <p>Peso: {pkg.peso} kg</p>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div>
+                              <h3 className="font-bold">Historial de Envío</h3>
+                              <div className="mt-2 space-y-2">
+                                {orderGuia.historial.map((hist) => (
+                                  <div key={hist.id} className="text-sm">
+                                    <p className="font-medium">{formatDate(hist.fecha_hora)}</p>
+                                    <p className="text-gray-700">{hist.observaciones}</p>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
                   </div>
-
+                ) : (
+                  <div className="bg-gray-50 p-4 border-b">
+                    <p className="text-sm font-medium">No se ha encontrado información</p>
+                    <p className="text-sm text-gray-500">Introduzca un número de guía válido para ver el estado del envío</p>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="bg-gray-50 p-4 border-b">
-                <p className="text-sm font-medium">No se ha encontrado información</p>
-                <p className="text-sm text-gray-500">Introduzca un número de guía válido para ver el estado del envío</p>
-              </div>
-            )}
+            </div>
+          </div>
+          
+          <div className="md:col-span-1">
+            {orderGuia && <LiveTrackingWidget idOrden={orderGuia.orden.id} />}
           </div>
         </div>
       </main>
+
+      <CreateShipmentModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 }

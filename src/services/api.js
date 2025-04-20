@@ -113,13 +113,13 @@ export const authService = {
 
 // Servicio para usuarios
 export const userService = {
-    getProfile: async () => {
+    /*getProfile: async () => {
         return api.get(config.ENDPOINTS.USERS.PROFILE);
-    },
+    },*/
 
-    updateProfile: async (userData) => {
+    /*updateProfile: async (userData) => {
         return api.put(config.ENDPOINTS.USERS.PROFILE, userData);
-    },
+    },*/
 
     getAllUsers: async () => {
         return api.get(config.ENDPOINTS.USERS.ALL);
@@ -138,6 +138,21 @@ export const orderService = {
 
     updateStatus: async (id, status) => {
         return api.patch(config.ENDPOINTS.ORDERS.DETAIL(id), { status });
+    }
+};
+
+export const logisticsService = {
+    create: async (orderData) => {
+        return api.post(config.ENDPOINTS.LOGISTICS.CREATE, orderData);
+    },
+    getOrdenes: async () => {
+        return api.get(config.ENDPOINTS.LOGISTICS.GET_ORDENES_PENDIENTES);
+    },
+    getRutas: async () => {
+        return api.get(config.ENDPOINTS.LOGISTICS.GET_RUTAS);
+    },
+    getTransportistas: async () => {
+        return api.get(config.ENDPOINTS.LOGISTICS.GET_TRANSPORTISTAS);
     }
 };
 

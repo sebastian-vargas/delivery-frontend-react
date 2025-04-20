@@ -14,6 +14,12 @@ const config = {
             PROFILE: '/users/profile',
             ALL: '/users'
         },
+        LOGISTICS: {
+            CREATE: '/logistica/asignar',
+            GET_RUTAS: '/logistica/rutas?page=1&limit=100',
+            GET_TRANSPORTISTAS: '/logistica/transportistas?page=1&limit=100',
+            GET_ORDENES_PENDIENTES: `envios/estado/en_espera?page=1&limit=100`
+        },
         PRODUCTS: {
             ALL: '/products',
             DETAIL: (id) => `/products/${id}`
